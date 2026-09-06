@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#6c4ab6">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>手機上架｜Unlimit</title>
+<link rel="stylesheet" href="phone-upload.css?v=1">
+</head>
+<body class="mobile-page">
+  <header class="mobile-top">
+    <img src="logo.png" alt="Unlimit 無吉限吉他工作室" class="mobile-logo">
+    <div>
+      <p class="mobile-kicker">手機上架</p>
+      <h1>建立吉他商品草稿</h1>
+    </div>
+  </header>
+
+  <main class="mobile-shell">
+    <p class="mobile-lead">照片與文字會先存成待確認商品，不會直接出現在正式網站。</p>
+
+    <form id="mobileForm" novalidate>
+      <section class="mobile-card">
+        <h2>商品內容</h2>
+        <label>分類
+          <select id="mCat">
+            <option value="acoustic">木吉他</option>
+            <option value="electric">電吉他</option>
+          </select>
+        </label>
+        <label>商品名稱
+          <input id="mName" type="text" placeholder="例：108號面單" autocomplete="off" required>
+        </label>
+        <label>品牌標籤
+          <input id="mBrand" type="text" placeholder="例：特價福利品" autocomplete="off">
+        </label>
+        <label>價格
+          <input id="mPrice" type="number" min="0" inputmode="numeric" placeholder="例：3500">
+        </label>
+        <label>商品介紹
+          <textarea id="mDesc" rows="12" placeholder="描述特色、材質、尺寸、適合對象及購買須知…"></textarea>
+          <span class="mobile-field-hint" id="mDescCount">0 字</span>
+        </label>
+      </section>
+
+      <section class="mobile-card">
+        <div class="mobile-section-head">
+          <div><h2>商品照片</h2><p>第一張是封面，可調整順序。</p></div>
+          <label class="mobile-file-btn">＋ 拍照／選照片
+            <input id="mImages" type="file" accept="image/*,.heic,.heif" multiple>
+          </label>
+        </div>
+        <p class="mobile-field-hint">照片會依序轉成網站使用的 JPG；不設定張數或檔案大小上限。</p>
+        <p id="imageWork" class="mobile-work" aria-live="polite"></p>
+        <div id="mobilePreview" class="mobile-preview"></div>
+      </section>
+
+      <section class="mobile-card transfer-card">
+        <h2>選擇傳送方式</h2>
+
+        <div class="transfer-option" id="wifiOption">
+          <div><b>同一個 Wi‑Fi 直接傳到 Mac</b><span>最快，直接進入 Mac 待確認區。</span></div>
+          <label class="pair-input">一次性密碼
+            <input id="pairCodeInput" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="6 位數">
+          </label>
+          <button type="button" class="mobile-btn primary" id="wifiSendBtn">傳到 Mac 待確認區</button>
+        </div>
+
+        <div class="transfer-option">
+          <div><b>AirDrop</b><span>開啟 iPhone 分享選單後選擇 AirDrop。</span></div>
+          <button type="button" class="mobile-btn" id="airdropBtn">產生上架包並分享</button>
+        </div>
+
+        <div class="transfer-option">
+          <div><b>LINE</b><span>開啟分享選單後選擇 LINE，會以完整 ZIP 檔傳送。</span></div>
+          <button type="button" class="mobile-btn" id="lineBtn">產生上架包並分享</button>
+        </div>
+
+        <button type="button" class="mobile-link-btn" id="downloadBtn">無法分享？改為下載上架包</button>
+        <p id="sendStatus" class="mobile-status" aria-live="polite"></p>
+      </section>
+
+      <button type="button" class="mobile-link-btn danger-text" id="clearDraftBtn">清除這支手機上的草稿</button>
+    </form>
+  </main>
+
+  <script src="jszip.min.js"></script>
+  <script src="phone-upload.js?v=1"></script>
+</body>
+</html>
