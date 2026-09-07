@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="no-referrer">
 <title>手機上架｜Unlimit</title>
-<link rel="stylesheet" href="phone-upload.css?v=1">
+<link rel="stylesheet" href="phone-upload.css?v=2">
 </head>
 <body class="mobile-page">
   <header class="mobile-top">
@@ -57,6 +57,17 @@
         <div id="mobilePreview" class="mobile-preview"></div>
       </section>
 
+      <section class="mobile-card batch-card">
+        <div class="mobile-section-head">
+          <div><h2>批量上架清單</h2><p>每填好一把，就先加入清單。</p></div>
+          <span class="batch-count" id="batchCount">0 把</span>
+        </div>
+        <button type="button" class="mobile-btn primary" id="addBatchBtn">＋ 將目前這把加入批量清單</button>
+        <p class="mobile-field-hint">加入後表單會清空，可繼續建立下一把；最後只會產生一個上架包。</p>
+        <p id="batchStatus" class="mobile-work" aria-live="polite"></p>
+        <div id="batchList" class="batch-list"></div>
+      </section>
+
       <section class="mobile-card transfer-card">
         <h2>選擇傳送方式</h2>
 
@@ -87,6 +98,6 @@
   </main>
 
   <script src="jszip.min.js"></script>
-  <script src="phone-upload.js?v=1"></script>
+  <script src="phone-upload.js?v=2"></script>
 </body>
 </html>

@@ -3,7 +3,9 @@
 const DRAFT_KEY = "unlimit-mobile-listing-draft-v1";
 const DB_NAME = "unlimit-mobile-listing-images";
 const DB_STORE = "images";
+const BATCH_STORE = "batch";
 let photos = [];
+let batchItems = [];
 let photoSeq = 0;
 
 const byId = id => document.getElementById(id);
@@ -14,20 +16,32 @@ const fields = {
 
 function openImageDB(){
   return new Promise((resolve, reject)=>{
-    const request = indexedDB.open(DB_NAME, 1);
-    request.onupgradeneeded = ()=> request.result.createObjectStore(DB_STORE, { keyPath:"id" });
+    const request = indexedDB.open(DB_NAME, 2);
+    request.onupgradeneeded = ()=>{
+      const db = request.result;
+      if(!db.objectStoreNames.contains(DB_STORE)) db.createObjectStore(DB_STORE, { keyPath:"id" });
+      if(!db.objectStoreNames.contains(BATCH_STORE)) db.createObjectStore(BATCH_STORE, { keyPath:"id" });
+    };
     request.onsuccess = ()=> resolve(request.result);
     request.onerror = ()=> reject(request.error || new Error("無法開啟手機照片草稿"));
   });
 }
 
-async function readStoredPhotos(){
+async function readStore(storeName){
   const db = await openImageDB();
   return new Promise((resolve, reject)=>{
-    const request = db.transaction(DB_STORE).objectStore(DB_STORE).getAll();
-    request.onsuccess = ()=> resolve((request.result || []).sort((a,b)=>a.order-b.order));
+    const request = db.transaction(storeName).objectStore(storeName).getAll();
+    request.onsuccess = ()=> resolve(request.result || []);
     request.onerror = ()=> reject(request.error);
   });
+}
+
+async function readStoredPhotos(){
+  return (await readStore(DB_STORE)).sort((a,b)=>a.order-b.order);
+}
+
+async function readBatchItems(){
+  return (await readStore(BATCH_STORE)).sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)));
 }
 
 async function saveStoredPhotos(){
@@ -42,12 +56,39 @@ async function saveStoredPhotos(){
   });
 }
 
-async function clearStoredPhotos(){
+async function clearCurrentPhotos(){
+  const old = photos;
+  photos = [];
+  try{ await saveStoredPhotos(); }
+  finally{ photos = old; }
+}
+
+async function putBatchItem(item){
   const db = await openImageDB();
   await new Promise((resolve, reject)=>{
-    const request = db.transaction(DB_STORE, "readwrite").objectStore(DB_STORE).clear();
+    const request = db.transaction(BATCH_STORE, "readwrite").objectStore(BATCH_STORE).put(item);
     request.onsuccess = resolve;
     request.onerror = ()=> reject(request.error);
+  });
+}
+
+async function deleteBatchItem(id){
+  const db = await openImageDB();
+  await new Promise((resolve, reject)=>{
+    const request = db.transaction(BATCH_STORE, "readwrite").objectStore(BATCH_STORE).delete(id);
+    request.onsuccess = resolve;
+    request.onerror = ()=> reject(request.error);
+  });
+}
+
+async function clearStoredDraft(){
+  const db = await openImageDB();
+  await new Promise((resolve, reject)=>{
+    const tx = db.transaction([DB_STORE, BATCH_STORE], "readwrite");
+    tx.objectStore(DB_STORE).clear();
+    tx.objectStore(BATCH_STORE).clear();
+    tx.oncomplete = resolve;
+    tx.onerror = ()=> reject(tx.error);
   });
 }
 
@@ -78,9 +119,7 @@ function updateDescCount(){ byId("mDescCount").textContent = fields.desc.value.l
 Object.values(fields).forEach(field=> field.addEventListener("input", saveTextDraft));
 fields.category.addEventListener("change", saveTextDraft);
 
-function makePhoto(record){
-  return { ...record, url:URL.createObjectURL(record.blob) };
-}
+function makePhoto(record){ return { ...record, url:URL.createObjectURL(record.blob) }; }
 
 function replacePhotos(records){
   photos.forEach(photo=> URL.revokeObjectURL(photo.url));
@@ -205,10 +244,143 @@ function validatedProduct(){
   };
 }
 
-async function buildListingPackage(){
+function currentFormHasContent(){
+  return Boolean(fields.name.value.trim() || fields.brand.value.trim() || fields.price.value ||
+    fields.desc.value.trim() || photos.length);
+}
+
+function resetCurrentForm(){
+  localStorage.removeItem(DRAFT_KEY);
+  replacePhotos([]);
+  fields.category.value = "acoustic";
+  fields.name.value = "";
+  fields.brand.value = "";
+  fields.price.value = "";
+  fields.desc.value = "";
+  byId("imageWork").textContent = "";
+  updateDescCount();
+}
+
+function formatBytes(bytes){
+  if(!bytes) return "0 B";
+  if(bytes < 1024 * 1024) return Math.max(1, Math.round(bytes / 1024)) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+}
+
+function renderBatch(){
+  byId("batchCount").textContent = batchItems.length + " 把";
+  const wrap = byId("batchList");
+  wrap.replaceChildren();
+  if(!batchItems.length){
+    const empty = document.createElement("p");
+    empty.className = "batch-empty";
+    empty.textContent = "清單目前是空的；也可以維持原本方式，直接傳送目前這一把。";
+    wrap.append(empty);
+    return;
+  }
+  batchItems.forEach((item, index)=>{
+    const row = document.createElement("div");
+    row.className = "batch-item";
+    const info = document.createElement("div");
+    info.className = "batch-item-info";
+    const title = document.createElement("b");
+    title.textContent = (index + 1) + ". " + item.product.name;
+    const bytes = item.photos.reduce((sum, photo)=>sum + Number(photo.blob && photo.blob.size || 0), 0);
+    const meta = document.createElement("span");
+    meta.textContent = item.photos.length + " 張照片・約 " + formatBytes(bytes);
+    info.append(title, meta);
+    const ops = document.createElement("div");
+    ops.className = "batch-item-ops";
+    for(const [action, label] of [["edit", "修改"], ["delete", "移除"]]){
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.batchAction = action;
+      button.dataset.batchId = item.id;
+      button.textContent = label;
+      ops.append(button);
+    }
+    row.append(info, ops);
+    wrap.append(row);
+  });
+}
+
+function batchStatus(message, error=false){
+  const box = byId("batchStatus");
+  box.textContent = message || "";
+  box.classList.toggle("is-error", error);
+}
+
+byId("addBatchBtn").addEventListener("click", async event=> withBusy(event.currentTarget, async()=>{
   const product = validatedProduct();
+  const item = {
+    id:"batch_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,7),
+    createdAt:new Date().toISOString(),
+    product,
+    photos:photos.map(photo=>({ id:photo.id, blob:photo.blob, name:photo.name }))
+  };
+  await putBatchItem(item);
+  batchItems.push(item);
+  await clearCurrentPhotos();
+  resetCurrentForm();
+  renderBatch();
+  batchStatus("✔ 已加入「" + product.name + "」；可繼續填下一把");
+}, batchStatus));
+
+byId("batchList").addEventListener("click", async event=>{
+  const button = event.target.closest("button[data-batch-action]");
+  if(!button) return;
+  const item = batchItems.find(entry=>entry.id === button.dataset.batchId);
+  if(!item) return;
+  if(button.dataset.batchAction === "delete"){
+    if(!confirm("確定要從批量清單移除「" + item.product.name + "」嗎？")) return;
+    await deleteBatchItem(item.id);
+    batchItems = batchItems.filter(entry=>entry.id !== item.id);
+    renderBatch();
+    batchStatus("已從清單移除「" + item.product.name + "」");
+    return;
+  }
+  if(currentFormHasContent() && !confirm("目前表單還有內容。要用「" + item.product.name + "」取代目前表單嗎？")) return;
+  await deleteBatchItem(item.id);
+  batchItems = batchItems.filter(entry=>entry.id !== item.id);
+  fields.category.value = item.product.category;
+  fields.name.value = item.product.name;
+  fields.brand.value = item.product.brand;
+  fields.price.value = item.product.price || "";
+  fields.desc.value = item.product.desc;
+  replacePhotos(item.photos);
+  await saveStoredPhotos();
+  saveTextDraft();
+  renderBatch();
+  batchStatus("已載入「" + item.product.name + "」，修改後請再加入清單");
+  scrollTo({ top:0, behavior:"smooth" });
+});
+
+async function buildListingPackage(){
   const zip = new JSZip();
   const stamp = Date.now().toString(36);
+  if(batchItems.length){
+    if(currentFormHasContent()) throw new Error("目前表單還有一把尚未加入清單，請先按「加入批量清單」再傳送");
+    const products = batchItems.map((item, productIndex)=>{
+      const product = { ...item.product, images:[] };
+      item.photos.forEach((photo, photoIndex)=>{
+        const path = "images/mobile_" + stamp + "_p" + String(productIndex + 1).padStart(2, "0") +
+          "_" + String(photoIndex + 1).padStart(2, "0") + ".jpg";
+        product.images.push(path);
+        zip.file(path, photo.blob);
+      });
+      return product;
+    });
+    zip.file("listing.json", JSON.stringify({
+      format:"unlimit-mobile-listing",
+      formatVersion:2,
+      createdAt:new Date().toISOString(),
+      products
+    }, null, 2));
+    const blob = await zip.generateAsync({ type:"blob", compression:"DEFLATE", compressionOptions:{ level:6 } });
+    return new File([blob], "Unlimit批量上架包_" + products.length + "把.zip", { type:"application/zip" });
+  }
+
+  const product = validatedProduct();
   photos.forEach((photo, index)=>{
     const path = "images/mobile_" + stamp + "_" + String(index + 1).padStart(2, "0") + ".jpg";
     product.images.push(path);
@@ -221,8 +393,7 @@ async function buildListingPackage(){
     product
   }, null, 2));
   const blob = await zip.generateAsync({ type:"blob", compression:"DEFLATE", compressionOptions:{ level:6 } });
-  const safe = nameForFile(product.name);
-  return new File([blob], "Unlimit上架包_" + safe + ".zip", { type:"application/zip" });
+  return new File([blob], "Unlimit上架包_" + nameForFile(product.name) + ".zip", { type:"application/zip" });
 }
 
 function nameForFile(value){
@@ -236,13 +407,13 @@ function status(message, error=false){
   box.classList.toggle("is-error", error);
 }
 
-async function withBusy(button, task){
+async function withBusy(button, task, report=status){
   const original = button.textContent;
   button.disabled = true;
   button.textContent = "處理中…";
-  status("");
+  report("");
   try{ await task(); }
-  catch(error){ status(error && error.message ? error.message : String(error), true); }
+  catch(error){ report(error && error.message ? error.message : String(error), true); }
   finally{ button.disabled = false; button.textContent = original; }
 }
 
@@ -305,24 +476,24 @@ byId("wifiSendBtn").addEventListener("click", event=> withBusy(event.currentTarg
 }));
 
 byId("clearDraftBtn").addEventListener("click", async()=>{
-  if(!confirm("確定要清除這支手機上的文字與照片草稿嗎？")) return;
+  if(!confirm("確定要清除這支手機上的文字、照片與批量清單嗎？")) return;
   localStorage.removeItem(DRAFT_KEY);
-  await clearStoredPhotos();
-  replacePhotos([]);
-  fields.category.value = "acoustic";
-  fields.name.value = "";
-  fields.brand.value = "";
-  fields.price.value = "";
-  fields.desc.value = "";
-  updateDescCount();
-  status("已清除手機草稿");
+  await clearStoredDraft();
+  batchItems = [];
+  resetCurrentForm();
+  renderBatch();
+  batchStatus("");
+  status("已清除手機草稿與批量清單");
 });
 
 (async function init(){
   restoreTextDraft();
   updateDescCount();
-  try{ replacePhotos(await readStoredPhotos()); }
-  catch(error){ status("無法讀取先前照片草稿：" + error.message, true); }
+  try{
+    replacePhotos(await readStoredPhotos());
+    batchItems = await readBatchItems();
+    renderBatch();
+  }catch(error){ status("無法讀取先前照片草稿：" + error.message, true); }
   const params = new URLSearchParams(location.hash.slice(1));
   const code = (params.get("code") || sessionStorage.getItem("unlimit-mobile-code") || "").replace(/\D/g, "").slice(0,6);
   if(code){
