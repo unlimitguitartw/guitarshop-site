@@ -63,6 +63,11 @@ async function loadData(){
 
 const TITLES = { acoustic:"木吉他", electric:"電吉他", accessories:"配件" };
 let currentCat = "acoustic";
+let currentSection = "products";
+const INFO_SECTIONS = {
+  reviews:{ title:"客戶評價", empty:"客戶評價整理中，敬請期待。" },
+  knowledge:{ title:"吉他小知識", empty:"吉他小知識文章準備中，敬請期待。" }
+};
 let currentSort = "num";     // 預設：依商品編號由小到大
 let searchQuery = "";
 
@@ -171,6 +176,16 @@ function sortList(list){
 
 function render(){
   const grid = document.getElementById("productGrid");
+  const isProducts = currentSection === "products";
+  document.querySelector(".content-controls").style.display = isProducts ? "" : "none";
+  document.getElementById("searchBtn").hidden = !isProducts;
+  if(!isProducts){
+    closeSearch();
+    const section = INFO_SECTIONS[currentSection];
+    document.getElementById("pageTitle").textContent = section.title;
+    grid.replaceChildren(textElement("p", "info-empty", section.empty));
+    return;
+  }
   const list = sortList(DATA[currentCat] || []);
   grid.replaceChildren();
   if(!list.length){
@@ -300,6 +315,19 @@ modal.addEventListener("click", e=>{ if(e.target===modal) modal.classList.remove
 
 /* ===== 分類切換 ===== */
 const productNav = document.getElementById("productNav");
+document.querySelectorAll(".nav-section").forEach(button=>{
+  button.addEventListener("click",()=>{
+    currentSection = button.dataset.section;
+    document.querySelectorAll(".nav-section").forEach(item=>item.removeAttribute("aria-current"));
+    button.setAttribute("aria-current", "page");
+    document.querySelectorAll(".cat-list li").forEach(item=>{
+      item.classList.remove("active");
+      item.querySelector("button").removeAttribute("aria-current");
+    });
+    productNav.open = false;
+    render();
+  });
+});
 document.addEventListener("click", event=>{
   if(!productNav.contains(event.target)) productNav.open = false;
 });
@@ -318,6 +346,8 @@ document.querySelectorAll(".cat-list li").forEach(li=>{
     li.classList.add("active");
     li.querySelector("button").setAttribute("aria-current", "true");
     currentCat = li.dataset.cat;
+    currentSection = "products";
+    document.querySelectorAll(".nav-section").forEach(item=>item.removeAttribute("aria-current"));
     render();
     productNav.open = false;
     productNav.querySelector("summary").focus();
