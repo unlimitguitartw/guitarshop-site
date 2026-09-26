@@ -74,14 +74,22 @@ button{ font-family:inherit; cursor:pointer; border:none; background:none; }
 
 /* 左側分類 */
 .sidebar{ width:240px; flex-shrink:0; }
-.cat-list{ list-style:none; }
-.cat-list li{ border-bottom:1px solid var(--line); }
+.nav-dropdown{ position:relative; }
+.nav-dropdown summary{ list-style:none; cursor:pointer; display:flex; align-items:center; gap:10px; width:fit-content; padding:14px 4px; font-size:16px; font-weight:700; letter-spacing:.04em; color:#222; }
+.nav-dropdown summary::-webkit-details-marker{ display:none; }
+.nav-dropdown summary:hover{ color:var(--purple); }
+.nav-dropdown summary:focus-visible,.cat-list button:focus-visible{ outline:2px solid var(--purple); outline-offset:3px; }
+.nav-dropdown .chev{ width:6px; height:6px; border-color:currentColor; margin-top:-3px; transition:transform .15s; }
+.nav-dropdown[open] summary{ box-shadow:0 3px 0 var(--purple); }
+.nav-dropdown[open] .chev{ transform:rotate(225deg); margin-top:3px; }
+.cat-list{ list-style:none; position:absolute; top:100%; left:0; width:240px; max-width:calc(100vw - 32px); margin:3px 0 0; padding:12px 0; background:#fff; box-shadow:0 8px 24px rgba(0,0,0,.1); z-index:45; }
+.cat-list li{ border:0; }
 .cat-list button{
   width:100%; display:flex; justify-content:space-between; align-items:center;
-  padding:18px 4px; font-size:20px; font-weight:700; color:#222; text-align:left;
+  padding:16px 24px; font-size:16px; font-weight:700; color:#222; text-align:left; letter-spacing:.04em;
 }
 .cat-list li.active button{ color:var(--purple); }
-.cat-list button:hover{ color:var(--purple); }
+.cat-list button:hover{ color:var(--purple); background:#f8f6fc; }
 .chev{ width:9px; height:9px; border-right:2px solid #999; border-bottom:2px solid #999; transform:rotate(45deg); }
 
 /* ===== 主內容 ===== */
@@ -234,16 +242,8 @@ body{ padding-bottom:88px; }
   .logo-img{ height:38px; }
   .logo-sub{ font-size:11px; letter-spacing:3px; margin-top:3px; }
 
-  /* 分類改成橫向膠囊按鈕 */
+  /* 手機維持相同的商品下拉導覽 */
   .sidebar{ width:100%; }
-  .cat-list{ display:flex; gap:10px; }
-  .cat-list li{ flex:1; border-bottom:none; }
-  .cat-list button{
-    justify-content:center; padding:12px 6px; font-size:17px;
-    border:1.5px solid var(--line); border-radius:999px; color:#555;
-  }
-  .cat-list li.active button{ background:#f3eefc; border-color:var(--purple); }
-  .chev{ display:none; }
 
   .content-head{ margin-bottom:16px; }
   .content-head h1{ font-size:24px; }

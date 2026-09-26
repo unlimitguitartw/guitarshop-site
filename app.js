@@ -299,12 +299,28 @@ document.getElementById("modalClose").addEventListener("click", ()=> modal.class
 modal.addEventListener("click", e=>{ if(e.target===modal) modal.classList.remove("open"); });
 
 /* ===== 分類切換 ===== */
+const productNav = document.getElementById("productNav");
+document.addEventListener("click", event=>{
+  if(!productNav.contains(event.target)) productNav.open = false;
+});
+document.addEventListener("keydown", event=>{
+  if(event.key === "Escape" && productNav.open){
+    productNav.open = false;
+    productNav.querySelector("summary").focus();
+  }
+});
 document.querySelectorAll(".cat-list li").forEach(li=>{
   li.addEventListener("click",()=>{
-    document.querySelectorAll(".cat-list li").forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll(".cat-list li").forEach(x=>{
+      x.classList.remove("active");
+      x.querySelector("button").removeAttribute("aria-current");
+    });
     li.classList.add("active");
+    li.querySelector("button").setAttribute("aria-current", "true");
     currentCat = li.dataset.cat;
     render();
+    productNav.open = false;
+    productNav.querySelector("summary").focus();
   });
 });
 

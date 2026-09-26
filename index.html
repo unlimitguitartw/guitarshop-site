@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=13">
+<link rel="stylesheet" href="style.css?v=14">
 </head>
 <body>
 
@@ -53,11 +53,16 @@
 
   <!-- 商品分類 -->
   <aside class="sidebar">
-    <ul class="cat-list">
-      <li class="active" data-cat="acoustic"><button>木吉他 <i class="chev"></i></button></li>
-      <li data-cat="electric"><button>電吉他 <i class="chev"></i></button></li>
-      <li data-cat="accessories"><button>配件 <i class="chev"></i></button></li>
-    </ul>
+    <nav aria-label="網站導覽">
+      <details class="nav-dropdown" id="productNav">
+        <summary>商品 <i class="chev" aria-hidden="true"></i></summary>
+        <ul class="cat-list">
+          <li class="active" data-cat="acoustic"><button type="button" aria-current="true">木吉他</button></li>
+          <li data-cat="electric"><button type="button">電吉他</button></li>
+          <li data-cat="accessories"><button type="button">配件</button></li>
+        </ul>
+      </details>
+    </nav>
   </aside>
 
   <!-- 右側主內容 -->
@@ -116,6 +121,6 @@
 
 <script src="db.js?v=3"></script>
 <script src="data.js?v=5"></script>
-<script src="app.js?v=14"></script>
+<script src="app.js?v=15"></script>
 </body>
 </html>
