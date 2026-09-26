@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<title>Unlimit｜客戶評價測試頁</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=15">
+<link rel="stylesheet" href="reviews.css?v=1">
+</head>
+<body>
+<aside style="padding:12px 18px;background:#fff5da;color:#684b11;font-size:15px;line-height:1.6;text-align:center">客戶評價測試頁（非正式官網）｜投稿會存入雲端，其他人也能看到。測試時請使用「手機測試－你的暱稱」，勿填寫個人敏感資料。</aside>
+
+<!-- 最上方紫色細線 -->
+<div class="top-accent"></div>
+
+<!-- ===== 頁首 Header ===== -->
+<header class="site-header">
+  <div class="header-inner">
+    <!-- 中央 Logo -->
+    <a href="#" class="logo">
+      <img src="logo.png" alt="Unlimit" class="logo-img"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <span class="logo-main" style="display:none">Unlimit</span>
+      <span class="logo-sub">無吉限吉他工作室</span>
+    </a>
+
+    <!-- 右上角圖示 -->
+    <div class="header-icons">
+      <a class="icon-btn" href="https://www.instagram.com/unlimitguitar_tw/" target="_blank" rel="noopener" title="Instagram">
+        <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="6" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.4" fill="currentColor"/></svg>
+      </a>
+      <button class="icon-btn" type="button" title="搜尋" id="searchBtn"
+              aria-label="搜尋商品" aria-expanded="false" aria-controls="searchPanel">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.8l-.3-.3a6.5 6.5 0 10-.7.7l.3.3v.8l5 5 1.5-1.5-5-5zm-6 0a4.5 4.5 0 110-9 4.5 4.5 0 010 9z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="search-panel" id="searchPanel" hidden>
+    <label for="searchInput">搜尋商品</label>
+    <input id="searchInput" type="search" placeholder="輸入商品名稱、品牌或介紹關鍵字"
+           autocomplete="off" enterkeyhint="search">
+    <button type="button" id="searchClear">清除</button>
+  </div>
+
+</header>
+
+<!-- ===== 主體 ===== -->
+<div class="layout">
+
+  <!-- 商品分類 -->
+  <aside class="sidebar">
+    <nav aria-label="網站導覽">
+      <details class="nav-dropdown" id="productNav">
+        <summary>商品 <i class="chev" aria-hidden="true"></i></summary>
+        <ul class="cat-list">
+          <li class="active" data-cat="acoustic"><button type="button" aria-current="true">木吉他</button></li>
+          <li data-cat="electric"><button type="button">電吉他</button></li>
+          <li data-cat="accessories"><button type="button">配件</button></li>
+        </ul>
+      </details>
+      <button type="button" class="nav-section" data-section="reviews">客戶評價</button>
+      <button type="button" class="nav-section" data-section="knowledge">吉他小知識</button>
+    </nav>
+  </aside>
+
+  <!-- 右側主內容 -->
+  <main class="content">
+    <div class="content-head">
+      <h1 id="pageTitle">木吉他</h1>
+      <div class="content-controls">
+        <div class="sort-wrap">
+          <button class="sort-btn" id="sortBtn">商品排序 <i class="caret"></i></button>
+          <div class="sort-menu" id="sortMenu">
+            <p class="sort-menu-title">商品排序</p>
+            <button data-sort="num">商品編號：由小到大</button>
+            <button data-sort="new">上架時間：由新到舊</button>
+            <button data-sort="old">上架時間：由舊到新</button>
+            <button data-sort="price-desc">價格：由高至低</button>
+            <button data-sort="price-asc">價格：由低至高</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 商品格 Grid -->
+    <div class="product-grid" id="productGrid"><!-- JS 產生 --></div>
+  </main>
+</div>
+
+<!-- ===== 頁尾 ===== -->
+<!-- ===== 聯絡我們（漂浮在底端的精簡列） ===== -->
+<div class="contact-bar" id="contact">
+  <a class="cb-ig" href="https://www.instagram.com/unlimitguitar_tw/" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="6" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.4" fill="currentColor"/></svg>
+    <span>@unlimitguitar_tw</span>
+  </a>
+</div>
+
+<footer class="site-footer">
+  <p>© 2026 Unlimit 無吉限吉他工作室</p>
+</footer>
+
+<!-- 商品詳情彈窗 -->
+<div class="modal" id="detailModal">
+  <div class="modal-box">
+    <button class="modal-close" id="modalClose">×</button>
+    <div class="modal-img" id="modalImg"></div>
+    <div class="modal-info">
+      <span class="modal-brand" id="modalBrand"></span>
+      <h2 id="modalName"></h2>
+      <p class="modal-price" id="modalPrice"></p>
+      <p class="modal-desc" id="modalDesc"></p>
+    </div>
+  </div>
+</div>
+
+<!-- 右下角浮動按鈕 -->
+<button class="float-top" id="toTop" title="回到頂端">↑</button>
+
+<script src="db.js?v=3"></script>
+<script src="data.js?v=5"></script>
+<script src="reviews-config.js?v=1"></script>
+<script src="reviews.js?v=1"></script>
+<script src="app.js?v=17"></script>
+<script src="preview-entry.js"></script>
+</body>
+</html>
