@@ -12,6 +12,16 @@ window.CustomerReviews = (()=>{
   let items = [];
   let adminToken = "";
 
+  // 只將「數字＋號」視為序號；G1A 等型號中的數字不是商品序號。
+  function compareReviewProducts(a, b){
+    const serial = name => name.match(/(?:^|[^0-9])([0-9]+)\s*號/);
+    const left = serial(a), right = serial(b);
+    if(!left && !right) return 0;
+    if(!left) return -1;
+    if(!right) return 1;
+    return Number(right[1]) - Number(left[1]);
+  }
+
   function el(tag, cls, text){
     const node = document.createElement(tag);
     if(cls) node.className = cls;
@@ -222,7 +232,7 @@ window.CustomerReviews = (()=>{
   }
   function mount(container, data){
     ++requestNumber; filter={stars:0,photos:false,product:"",sort:"newest",offset:0,nickname:""};
-    catalog=[...new Set(Object.values(data).flat().map(p=>p.name).filter(Boolean))];
+    catalog=[...new Set(Object.values(data).flat().map(p=>p.name).filter(Boolean))].sort(compareReviewProducts);
     root=el("section","reviews");root.setAttribute("aria-label","商品評價");
     const top=el("div","review-top");top.append(el("p","","每一份真實心得，都是選琴的參考。"));
     const add=button("＋ 新增評價","review-primary",openForm); top.append(add);root.append(top);
