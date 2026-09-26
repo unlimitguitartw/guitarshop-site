@@ -51,11 +51,12 @@
 <!-- ===== 主體 ===== -->
 <div class="layout">
 
-  <!-- 左側分類 Sidebar：只保留 木吉他 與 電吉他 -->
+  <!-- 商品分類 -->
   <aside class="sidebar">
     <ul class="cat-list">
-      <li class="active"><button>木吉他 <i class="chev"></i></button></li>
-      <li><button>電吉他 <i class="chev"></i></button></li>
+      <li class="active" data-cat="acoustic"><button>木吉他 <i class="chev"></i></button></li>
+      <li data-cat="electric"><button>電吉他 <i class="chev"></i></button></li>
+      <li data-cat="accessories"><button>配件 <i class="chev"></i></button></li>
     </ul>
   </aside>
 
@@ -115,6 +116,6 @@
 
 <script src="db.js?v=3"></script>
 <script src="data.js?v=5"></script>
-<script src="app.js?v=13"></script>
+<script src="app.js?v=14"></script>
 </body>
 </html>

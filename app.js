@@ -1,7 +1,7 @@
 /* ===== 取得商品資料 =====
    正式網站一律使用 data.js。只有網址明確帶有 ?preview=1 時，
    才讀取管理後台存在 IndexedDB/localStorage 的草稿。 */
-let DATA = { acoustic:[], electric:[] };
+let DATA = { acoustic:[], electric:[], accessories:[] };
 const DRAFT_PREVIEW = new URLSearchParams(location.search).has("preview");
 
 /* 圖片編號（img_ 開頭）＝存在瀏覽器資料庫裡的圖片 */
@@ -10,7 +10,7 @@ function isImgId(s){ return typeof s === "string" && s.indexOf("img_") === 0; }
 /* 把草稿裡的圖片編號換成可顯示的網址 */
 async function resolveDraftImages(data){
   const cache = {};
-  for(const cat of ["acoustic", "electric"]){
+  for(const cat of ["acoustic", "electric", "accessories"]){
     const products = Array.isArray(data && data[cat]) ? data[cat] : [];
     for(const p of products){
       if(!p || typeof p !== "object") continue;
@@ -58,10 +58,10 @@ async function loadData(){
       if(saved) return JSON.parse(saved);
     }catch(e){}
   }
-  return window.STORE_DATA || { acoustic:[], electric:[] };
+  return window.STORE_DATA || { acoustic:[], electric:[], accessories:[] };
 }
 
-const TITLES = { acoustic:"木吉他", electric:"電吉他" };
+const TITLES = { acoustic:"木吉他", electric:"電吉他", accessories:"配件" };
 let currentCat = "acoustic";
 let currentSort = "num";     // 預設：依商品編號由小到大
 let searchQuery = "";
@@ -90,6 +90,7 @@ function safeImageSource(value){
 /* 沒放真實圖片時，畫一把佔位吉他 */
 function placeholder(p, cat){
   const c = safeColor(p.color);
+  if(cat === "accessories") return `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="24" y="30" width="72" height="66" rx="10" fill="${c}"/><path d="M24 48h72M60 30v20" fill="none" stroke="#fff" stroke-width="5"/></svg>`;
   if(cat === "electric"){
     return `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
       <rect x="58" y="6" width="6" height="60" rx="2" fill="#2b2015"/>
@@ -298,11 +299,11 @@ document.getElementById("modalClose").addEventListener("click", ()=> modal.class
 modal.addEventListener("click", e=>{ if(e.target===modal) modal.classList.remove("open"); });
 
 /* ===== 分類切換 ===== */
-document.querySelectorAll(".cat-list li").forEach((li,i)=>{
+document.querySelectorAll(".cat-list li").forEach(li=>{
   li.addEventListener("click",()=>{
     document.querySelectorAll(".cat-list li").forEach(x=>x.classList.remove("active"));
     li.classList.add("active");
-    currentCat = i===0 ? "acoustic" : "electric";
+    currentCat = li.dataset.cat;
     render();
   });
 });
@@ -353,5 +354,6 @@ loadData().then(d=>{
   if(!Array.isArray(DATA.electric)) DATA.electric = [];
   DATA.acoustic = DATA.acoustic.filter(p => p && typeof p === "object");
   DATA.electric = DATA.electric.filter(p => p && typeof p === "object");
+  DATA.accessories = Array.isArray(DATA.accessories) ? DATA.accessories.filter(p => p && typeof p === "object") : [];
   render();
 });

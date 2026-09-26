@@ -107,7 +107,7 @@ function restoreTextDraft(){
   try{
     const data = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
     if(!data || typeof data !== "object") return;
-    fields.category.value = data.category === "electric" ? "electric" : "acoustic";
+    fields.category.value = ["acoustic", "electric", "accessories"].includes(data.category) ? data.category : "acoustic";
     fields.name.value = String(data.name || "");
     fields.brand.value = String(data.brand || "");
     fields.price.value = String(data.price || "");
@@ -235,7 +235,7 @@ function validatedProduct(){
   const name = fields.name.value.trim();
   if(!name){ fields.name.focus(); throw new Error("請先填寫商品名稱"); }
   return {
-    category:fields.category.value === "electric" ? "electric" : "acoustic",
+    category:["acoustic", "electric", "accessories"].includes(fields.category.value) ? fields.category.value : "acoustic",
     name,
     brand:fields.brand.value.trim(),
     price:Number(fields.price.value) || 0,
